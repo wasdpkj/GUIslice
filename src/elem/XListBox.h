@@ -49,8 +49,8 @@ extern "C" {
 // - Select any number above GSLC_TYPE_BASE_EXTEND
 #define  GSLC_TYPEX_LISTBOX GSLC_TYPE_BASE_EXTEND + 10
 
-/// Callback function for slider feedback
-//typedef bool (*GSLC_CB_XSLIDER_POS)(void* pvGui,void* pvElem,int16_t nPos);
+/// Callback function for ListBox feedback
+typedef bool (*GSLC_CB_XLISTBOX_SEL)(void* pvGui,void* pvElem,int16_t nSel);
 
 // Extended element data structures
 // - These data structures are maintained in the gslc_tsElem
@@ -60,6 +60,7 @@ extern "C" {
 typedef struct {
   // Config
   const char*     pStrItems;      ///< String containing items (newline-limited)
+  int16_t         nItemCnt;       ///< Number of items in the list
   /*
   bool            bVert;          ///< Orientation: true if vertical, else horizontal
   int16_t         nThumbSz;       ///< Size of the thumb control
@@ -73,12 +74,12 @@ typedef struct {
   gslc_tsColor    colTrim;        ///< Style: color of trim
   */
   // State
-  int8_t          nItemSel;       ///< Currently selected item (-1 for none)
+  int16_t         nItemSel;       ///< Currently selected item (-1 for none)
   /*
   int16_t         nPos;           ///< Current position value of the slider
-  // Callbacks
-  GSLC_CB_XSLIDER_POS pfuncXPos;  ///< Callback func ptr for position update
   */
+  // Callbacks
+  GSLC_CB_XLISTBOX_SEL pfuncXSel; ///< Callback func ptr for selection update
 } gslc_tsXListBox;
 
 
@@ -148,16 +149,6 @@ int gslc_ElemXSliderGetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 ///
 void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nPos);
 
-///
-/// Assign the position callback function for a slider
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  funcCb:      Function pointer to position routine (or NULL for none)
-///
-/// \return none
-///
-void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_XSLIDER_POS funcCb);
 */
 
 ///
@@ -187,6 +178,28 @@ bool gslc_ElemXListBoxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 ///
 //xxx bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 bool gslc_ElemXListBoxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
+
+
+///
+/// Get a ListBox element's current selection
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+///
+/// \return Current ListBox selection (or -1 if none)
+///
+int16_t gslc_ElemXListBoxGetSel(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
+
+///
+/// Assign the selection callback function for a ListBox
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  funcCb:      Function pointer to selection routine (or NULL for none)
+///
+/// \return none
+///
+void gslc_ElemXListBoxSetSelFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_CB_XLISTBOX_SEL funcCb);
 
 // ============================================================================
 

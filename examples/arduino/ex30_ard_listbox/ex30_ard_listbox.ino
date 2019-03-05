@@ -79,10 +79,14 @@ gslc_tsXSlider              m_sXSlider;
 */
 
 
-#define MAX_STR             15
+#define MAX_STR     15
+char                acTxt[MAX_STR+1];
+
 
 // Save some element references for quick access
 gslc_tsElemRef*  m_pElemCnt = NULL;
+gslc_tsElemRef*  m_pElemSel = NULL;
+gslc_tsElemRef*  m_pElemListBox = NULL;
 /*
 gslc_tsElemRef*  m_pElemProgress = NULL;
 gslc_tsElemRef*  m_pElemProgress1 = NULL;
@@ -103,6 +107,25 @@ bool CbBtnQuit(void* pvGui, void *pvElem, gslc_teTouch eTouch, int16_t nX, int16
     m_bQuit = true;
   }
   return true;
+}
+
+bool CbListBox(void* pvGui, void* pvElemRef, int16_t nSelId)
+{
+  gslc_tsGui*     pGui = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui, pElemRef);
+  if (pElemRef == NULL) {
+    return false;
+  }
+
+  // Update the status message with the selection
+  if (nSelId == -1) {
+    snprintf(acTxt, MAX_STR, "NONE");
+  } else {
+    snprintf(acTxt, MAX_STR, "%d", nSelId);
+  }
+  gslc_ElemSetTxtStr(&m_gui, m_pElemSel, acTxt);
+  
 }
 
 /*
@@ -174,8 +197,18 @@ bool InitOverlays()
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_YELLOW);
   m_pElemCnt = pElemRef; // Save for quick access
 
+  // Create selection status message
+  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 140, 60, 50, 10 },
+    (char*)"Selected:", 0, E_FONT_TXT);
+  static char mstr2[20] = "";
+  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 200, 60, 50, 10 },
+    mstr2, sizeof(mstr2), E_FONT_TXT);
+  gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_ORANGE);
+  m_pElemSel = pElemRef; // Save for quick access
+
+
   // Create the XListBox
-  static const char* m_pStrItems = "Red\nBlue\nGreen";
+  static const char* m_pStrItems = "Red|Blue|Green";
   pElemRef = gslc_ElemXListBoxCreate(&m_gui, E_ELEM_LISTBOX, E_PG_MAIN, &m_sXListBox,
     (gslc_tsRect) {
     20, 80, 100, 100
@@ -183,7 +216,8 @@ bool InitOverlays()
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_BLUE_DK3, GSLC_COL_GRAY_DK3, GSLC_COL_GREEN_DK1);
   gslc_ElemSetFrameEn(&m_gui, pElemRef, true);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_WHITE);
-  //m_pElemListBox = pElemRef; // Save for quick access
+  gslc_ElemXListBoxSetSelFunc(&m_gui, pElemRef, &CbListBox);
+  m_pElemListBox = pElemRef; // Save for quick access
 
 
   /*
@@ -290,15 +324,13 @@ void setup()
 
 void loop()
 {
-  char                acTxt[MAX_STR];
-
   // General counter
   m_nCount++;
 
   // Update elements on active page
 
   snprintf(acTxt, MAX_STR, "%u", m_nCount / 5);
-  //gslc_ElemSetTxtStr(&m_gui, m_pElemCnt, acTxt);
+  gslc_ElemSetTxtStr(&m_gui, m_pElemCnt, acTxt);
 
   /*
   gslc_ElemXGaugeUpdate(&m_gui, m_pElemProgress, ((m_nCount / 1) % 100));
