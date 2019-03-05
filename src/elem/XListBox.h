@@ -5,7 +5,7 @@
 
 
 // =======================================================================
-// GUIslice library extension: Slider control
+// GUIslice library extension: ListBox control
 // - Calvin Hass
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
@@ -56,30 +56,21 @@ typedef bool (*GSLC_CB_XLISTBOX_SEL)(void* pvGui,void* pvElem,int16_t nSel);
 // - These data structures are maintained in the gslc_tsElem
 //   structure via the pXData pointer
 
-/// Extended data for Slider element
+/// Extended data for ListBox element
 typedef struct {
+
   // Config
   const char*     pStrItems;      ///< String containing items (newline-limited)
   int16_t         nItemCnt;       ///< Number of items in the list
-  /*
-  bool            bVert;          ///< Orientation: true if vertical, else horizontal
-  int16_t         nThumbSz;       ///< Size of the thumb control
-  int16_t         nPosMin;        ///< Minimum position value of the slider
-  int16_t         nPosMax;        ///< Maximum position value of the slider
+
   // Style config
-  uint16_t        nTickDiv;       ///< Style: number of tickmark divisions (0 for none)
-  int16_t         nTickLen;       ///< Style: length of tickmarks
-  gslc_tsColor    colTick;        ///< Style: color of ticks
-  bool            bTrim;          ///< Style: show a trim color
-  gslc_tsColor    colTrim;        ///< Style: color of trim
-  */
+
   // State
   int16_t         nItemSel;       ///< Currently selected item (-1 for none)
-  /*
-  int16_t         nPos;           ///< Current position value of the slider
-  */
+
   // Callbacks
   GSLC_CB_XLISTBOX_SEL pfuncXSel; ///< Callback func ptr for selection update
+
 } gslc_tsXListBox;
 
 
@@ -91,68 +82,19 @@ typedef struct {
 /// \param[in]  nPage:       Page ID to attach element to
 /// \param[in]  pXData:      Ptr to extended element data structure
 /// \param[in]  rElem:       Rectangle coordinates defining checkbox size
-/// \param[in]  nPosMin:     Minimum position value
-/// \param[in]  nPosMax:     Maximum position value
-/// \param[in]  nPos:        Starting position value
-/// \param[in]  nThumbSz:    Size of the thumb control
-/// \param[in]  bVert:       Orientation (true for vertical)
+/// \param[in]  nFontId:     Font ID for item display
+/// \param[in]  pStrItems:   String containing list of items (delimited by '|')
+/// \param[in]  nSelDefault: Default item to select
 ///
 /// \return Pointer to Element reference or NULL if failure
 ///
-//gslc_tsElemRef* gslc_ElemXSliderCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t nPage,
-//  gslc_tsXSlider* pXData,gslc_tsRect rElem,int16_t nPosMin,int16_t nPosMax,int16_t nPos,
-//  uint16_t nThumbSz,bool bVert);
-
 gslc_tsElemRef* gslc_ElemXListBoxCreate(gslc_tsGui* pGui, int16_t nElemId, int16_t nPage,
   gslc_tsXListBox* pXData, gslc_tsRect rElem, int16_t nFontId, const char* pStrItems, int16_t nSelDefault);
 
 
-/*
-///
-/// Set a Slider element's current position
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  bTrim:       Show a colored trim?
-/// \param[in]  colTrim:     Color of trim
-/// \param[in]  nTickDiv:    Number of tick divisions to show (0 for none)
-/// \param[in]  nTickLen:    Length of tickmarks
-/// \param[in]  colTick:     Color of ticks
-///
-/// \return none
-///
-void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
-        bool bTrim,gslc_tsColor colTrim,uint16_t nTickDiv,
-        int16_t nTickLen,gslc_tsColor colTick);
-
 
 ///
-/// Get a Slider element's current position
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElemRef:    Pointer to Element reference
-///
-/// \return Current slider position
-///
-int gslc_ElemXSliderGetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
-
-
-///
-/// Set a Slider element's current position
-///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  pElemRef:    Pointer to Element reference
-/// \param[in]  nPos:        New position value
-///
-/// \return none
-///
-void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nPos);
-
-*/
-
-///
-/// Draw a Slider element on the screen
+/// Draw a ListBox element on the screen
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
@@ -161,11 +103,10 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nP
 ///
 /// \return true if success, false otherwise
 ///
-//xxx bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 bool gslc_ElemXListBoxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw);
 
 ///
-/// Handle touch events to Slider element
+/// Handle touch events to ListBox element
 /// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
@@ -176,7 +117,6 @@ bool gslc_ElemXListBoxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 ///
 /// \return true if success, false otherwise
 ///
-//xxx bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 bool gslc_ElemXListBoxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16_t nRelX,int16_t nRelY);
 
 

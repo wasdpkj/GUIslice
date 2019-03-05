@@ -77,6 +77,82 @@ extern const char GSLC_PMEM ERRSTR_PXD_NULL[];
 // - A ListBox control
 // ============================================================================
 
+// The following implementation could be greatly simplified
+// but left with an explicit search in case we want more
+// flexibility in how the item strings are defined.
+int16_t gslc_ElemXListBoxCalcItemCnt(const char* pStrItems)
+{
+  if (pStrItems == NULL) {
+    return 0;
+  }
+  const char* pCh = pStrItems;
+  int16_t nItemCnt = 0;
+  if (*pCh == 0) {
+    return nItemCnt;
+  }
+  for (nItemCnt=1; *pCh != 0; ++pCh) {
+    if (*pCh == '|') {
+      nItemCnt++;
+    }
+  }
+  return nItemCnt;
+}
+
+bool gslc_ElemXListBoxGetItem(const char* pStrItems,int16_t nItemSel,char* pStrItem,int8_t nStrItemLen)
+{
+  if (pStrItems == NULL) {
+    return false;
+  }
+  char chCur;
+  int8_t nStrPos = 0;
+  int16_t nItemCnt = 0;
+  bool bDone = false;
+  bool bFound = false;
+  int8_t nItemLen = 0;
+  if (nItemSel < 0) {
+    bDone = true;
+  }
+  if (pStrItems[0] == 0) {
+    bDone = true;
+  }
+  while (!bDone) {
+    chCur = pStrItems[nStrPos++];
+
+    if (nItemCnt == nItemSel) {
+      bFound = true;
+    }
+
+    // FIXME: Handle nStrItemLen vs nItemLen
+
+    if (nItemCnt == nItemSel) {
+      if (chCur == 0) {
+        // Null terminator. Copy it over
+        pStrItem[nItemLen++] = 0;
+      } else if (chCur == '|') {
+        // Reached end of searched entry, so don't copy separator
+        // Instead, just insert terminator
+        pStrItem[nItemLen++] = 0;
+        bDone = true;
+      } else {
+        // Inside searched entry, so copy over text
+        pStrItem[nItemLen++] = chCur;
+      }
+    } else {
+      // Not on searched entry, so skip
+      if (chCur == '|') {
+        nItemCnt++;
+      }
+    }
+
+    if (chCur == 0) {
+      bDone = true;
+    }
+
+  }
+  return bFound;
+}
+
+
 // Create a ListBox element and add it to the GUI element list
 // - Defines default styling for the element
 // - Defines callback for redraw and touch
@@ -98,7 +174,7 @@ gslc_tsElemRef* gslc_ElemXListBoxCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t
 
   sElem.nGroup            = GSLC_GROUP_ID_NONE;
   pXData->pStrItems       = pStrItems;
-  pXData->nItemCnt        = 3; //xxx FIXME
+  pXData->nItemCnt        = gslc_ElemXListBoxCalcItemCnt(pStrItems);
   pXData->nItemSel        = nItemDefault;
   pXData->pfuncXSel       = NULL;
   sElem.pXData            = (void*)(pXData);
@@ -197,6 +273,9 @@ bool gslc_ElemXListBoxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
   for (int nItemInd = 0; nItemInd < pListBox->nItemCnt; nItemInd++) {
 
     // FIXME: Replace by search for indexed string
+    bool bOk = gslc_ElemXListBoxGetItem(pListBox->pStrItems, nItemInd, acStr, XLISTBOX_MAX_STR);
+    // TODO: Handle !bOk
+    /*
     if (nItemInd == 0) {
       strncpy(acStr, "Red",XLISTBOX_MAX_STR);
     }
@@ -206,6 +285,7 @@ bool gslc_ElemXListBoxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
     else {
       strncpy(acStr, "Green",XLISTBOX_MAX_STR);
     }
+    */
 
     nItemY = nItemBaseY + (nItemInd * (XLISTBOX_ITEM_H + (2*XLISTBOX_ITEM_MARGIN_Y)) );
     nItemW = rElemRect.w - (2 * XLISTBOX_MARGIN_X);

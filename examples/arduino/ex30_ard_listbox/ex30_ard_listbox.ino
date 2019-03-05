@@ -41,14 +41,9 @@
 // Enumerations for pages, elements, fonts, images
 enum { E_PG_MAIN };
 enum {
-  E_ELEM_BOX, E_ELEM_BTN_QUIT, E_ELEM_TXT_COUNT,
-  E_ELEM_LISTBOX
+  E_ELEM_BTN_QUIT, E_ELEM_LISTBOX
 };
-//  E_ELEM_BOX, E_ELEM_BTN_QUIT, E_ELEM_TXT_COUNT, E_ELEM_PROGRESS, E_ELEM_PROGRESS1,
-//  E_ELEM_CHECK1, E_ELEM_RADIO1, E_ELEM_RADIO2, E_ELEM_SLIDER, E_ELEM_TXT_SLIDER
-//};
 enum { E_FONT_BTN, E_FONT_TXT };
-enum { E_GROUP1 };
 
 bool        m_bQuit = false;
 
@@ -61,7 +56,7 @@ unsigned    m_nCount = 0;
 #define MAX_FONT                2
 
 // Define the maximum number of elements per page
-#define MAX_ELEM_PG_MAIN          16                                        // # Elems total
+#define MAX_ELEM_PG_MAIN          7                                         // # Elems total
 #define MAX_ELEM_PG_MAIN_RAM      MAX_ELEM_PG_MAIN                          // # Elems in RAM
 
 gslc_tsGui                  m_gui;
@@ -72,11 +67,6 @@ gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
 gslc_tsXListBox             m_sXListBox;
-/*
-gslc_tsXGauge               m_sXGauge, m_sXGauge1;
-gslc_tsXCheckbox            m_asXCheck[3];
-gslc_tsXSlider              m_sXSlider;
-*/
 
 
 #define MAX_STR     15
@@ -87,12 +77,6 @@ char                acTxt[MAX_STR+1];
 gslc_tsElemRef*  m_pElemCnt = NULL;
 gslc_tsElemRef*  m_pElemSel = NULL;
 gslc_tsElemRef*  m_pElemListBox = NULL;
-/*
-gslc_tsElemRef*  m_pElemProgress = NULL;
-gslc_tsElemRef*  m_pElemProgress1 = NULL;
-gslc_tsElemRef*  m_pElemSlider = NULL;
-gslc_tsElemRef*  m_pElemSliderTxt = NULL;
-*/
 
 // Define debug message function
 static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
@@ -128,44 +112,6 @@ bool CbListBox(void* pvGui, void* pvElemRef, int16_t nSelId)
   
 }
 
-/*
-// Checkbox / radio callbacks
-// - Creating a callback function is optional, but doing so enables you to
-//   detect changes in the state of the elements.
-bool CbCheckbox(void* pvGui, void* pvElemRef, int16_t nSelId, bool bChecked)
-{
-  gslc_tsGui*     pGui = (gslc_tsGui*)(pvGui);
-  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui, pElemRef);
-  if (pElemRef == NULL) {
-    return false;
-  }
-
-  // Determine which element issued the callback
-  switch (pElem->nId) {
-  case E_ELEM_CHECK1:
-    GSLC_DEBUG_PRINT("Callback: Check[ID=%d] state=%u\n", pElem->nId, bChecked);
-    break;
-  case E_ELEM_RADIO1:
-  case E_ELEM_RADIO2:
-    // For the radio buttons, determine which ID is currently selected (nSelId)
-    // - Note that this may not always be the same as the element that
-    //   issued the callback (pElem->nId)
-    // - A return value of GSLC_ID_NONE indicates that no radio buttons
-    //   in the group are currently selected
-    if (nSelId == GSLC_ID_NONE) {
-      GSLC_DEBUG_PRINT("Callback: Radio[ID=NONE] selected\n", "");
-    }
-    else {
-      GSLC_DEBUG_PRINT("Callback: Radio[ID=%d] selected\n", nSelId);
-    }
-    break;
-  default:
-    break;
-  } // switch
-}
-*/
-
 
 // Create page elements
 bool InitOverlays()
@@ -179,7 +125,7 @@ bool InitOverlays()
   gslc_SetBkgndColor(&m_gui, GSLC_COL_GRAY_DK2);
 
   // Create background box
-  pElemRef = gslc_ElemCreateBox(&m_gui, E_ELEM_BOX, E_PG_MAIN, (gslc_tsRect) { 10, 10, 300, 220 });
+  pElemRef = gslc_ElemCreateBox(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 10, 10, 300, 220 });
   gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_WHITE, GSLC_COL_BLACK, GSLC_COL_BLACK);
 
   // Create Quit button with text label
@@ -192,7 +138,7 @@ bool InitOverlays()
   pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 20, 60, 50, 10 },
     (char*)"Count:", 0, E_FONT_TXT);
   static char mstr1[8] = "";
-  pElemRef = gslc_ElemCreateTxt(&m_gui, E_ELEM_TXT_COUNT, E_PG_MAIN, (gslc_tsRect) { 80, 60, 50, 10 },
+  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 80, 60, 50, 10 },
     mstr1, sizeof(mstr1), E_FONT_TXT);
   gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_YELLOW);
   m_pElemCnt = pElemRef; // Save for quick access
@@ -219,76 +165,6 @@ bool InitOverlays()
   gslc_ElemXListBoxSetSelFunc(&m_gui, pElemRef, &CbListBox);
   m_pElemListBox = pElemRef; // Save for quick access
 
-
-  /*
-  // Create progress bar (horizontal)
-  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 20, 80, 50, 10 },
-    (char*)"Progress:", 0, E_FONT_TXT);
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui, E_ELEM_PROGRESS, E_PG_MAIN, &m_sXGauge,
-    (gslc_tsRect) {
-    80, 80, 50, 10
-  }, 0, 100, 0, GSLC_COL_GREEN, false);
-  m_pElemProgress = pElemRef; // Save for quick access
-
-  // Second progress bar (vertical)
-  // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
-  pElemRef = gslc_ElemXGaugeCreate(&m_gui, E_ELEM_PROGRESS1, E_PG_MAIN, &m_sXGauge1,
-    (gslc_tsRect) {
-    280, 80, 10, 100
-  }, -25, 75, -15, GSLC_COL_RED, true);
-  gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_BLUE_DK3, GSLC_COL_BLACK, GSLC_COL_BLACK);
-  m_pElemProgress1 = pElemRef; // Save for quick access
-
-
-  // Create checkbox 1
-  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 20, 100, 20, 20 },
-    (char*)"Check1:", 0, E_FONT_TXT);
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui, E_ELEM_CHECK1, E_PG_MAIN, &m_asXCheck[0],
-    (gslc_tsRect) {
-    80, 100, 20, 20
-  }, false, GSLCX_CHECKBOX_STYLE_X, GSLC_COL_BLUE_LT2, false);
-  gslc_ElemXCheckboxSetStateFunc(&m_gui, pElemRef, &CbCheckbox);
-
-  // Create radio 1
-  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 20, 135, 20, 20 },
-    (char*)"Radio1:", 0, E_FONT_TXT);
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui, E_ELEM_RADIO1, E_PG_MAIN, &m_asXCheck[1],
-    (gslc_tsRect) {
-    80, 135, 20, 20
-  }, true, GSLCX_CHECKBOX_STYLE_ROUND, GSLC_COL_ORANGE, false);
-  gslc_ElemSetGroup(&m_gui, pElemRef, E_GROUP1);
-  gslc_ElemXCheckboxSetStateFunc(&m_gui, pElemRef, &CbCheckbox);
-
-  // Create radio 2
-  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 20, 160, 20, 20 },
-    (char*)"Radio2:", 0, E_FONT_TXT);
-  pElemRef = gslc_ElemXCheckboxCreate(&m_gui, E_ELEM_RADIO2, E_PG_MAIN, &m_asXCheck[2],
-    (gslc_tsRect) {
-    80, 160, 20, 20
-  }, true, GSLCX_CHECKBOX_STYLE_ROUND, GSLC_COL_ORANGE, false);
-  gslc_ElemSetGroup(&m_gui, pElemRef, E_GROUP1);
-  gslc_ElemXCheckboxSetStateFunc(&m_gui, pElemRef, &CbCheckbox);
-
-  // Create slider
-  pElemRef = gslc_ElemXSliderCreate(&m_gui, E_ELEM_SLIDER, E_PG_MAIN, &m_sXSlider,
-    (gslc_tsRect) {
-    160, 140, 100, 20
-  }, 0, 100, 60, 5, false);
-  gslc_ElemXSliderSetStyle(&m_gui, pElemRef, true, (gslc_tsColor) { 0, 0, 128 }, 10,
-    5, (gslc_tsColor) { 64, 64, 64 });
-  m_pElemSlider = pElemRef; // Save for quick access
-
-
-  static char mstr2[8] = "Slider:";
-  pElemRef = gslc_ElemCreateTxt(&m_gui, GSLC_ID_AUTO, E_PG_MAIN, (gslc_tsRect) { 160, 160, 60, 20 },
-    mstr2, sizeof(mstr2), E_FONT_TXT);
-  static char mstr3[6] = "???";
-  pElemRef = gslc_ElemCreateTxt(&m_gui, E_ELEM_TXT_SLIDER, E_PG_MAIN, (gslc_tsRect) { 220, 160, 40, 20 },
-    mstr3, sizeof(mstr3), E_FONT_TXT);
-  gslc_ElemSetTxtCol(&m_gui, pElemRef, GSLC_COL_ORANGE);
-  m_pElemSliderTxt = pElemRef; // Save for quick access
-  */
-
   return true;
 }
 
@@ -306,10 +182,10 @@ void setup()
   // Load Fonts
   #ifdef USE_EXTRA_FONTS
     // Demonstrate the use of additional fonts (must have #include)
-  if (!gslc_FontAdd(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, &FreeSansBold12pt7b, 1)) { return; }
+    if (!gslc_FontAdd(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, &FreeSansBold12pt7b, 1)) { return; }
   #else
     // Use default font
-  if (!gslc_FontAdd(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, NULL, 1)) { return; }
+    if (!gslc_FontAdd(&m_gui, E_FONT_BTN, GSLC_FONTREF_PTR, NULL, 1)) { return; }
   #endif
   if (!gslc_FontAdd(&m_gui, E_FONT_TXT, GSLC_FONTREF_PTR, NULL, 1)) { return; }
 
@@ -331,19 +207,6 @@ void loop()
 
   snprintf(acTxt, MAX_STR, "%u", m_nCount / 5);
   gslc_ElemSetTxtStr(&m_gui, m_pElemCnt, acTxt);
-
-  /*
-  gslc_ElemXGaugeUpdate(&m_gui, m_pElemProgress, ((m_nCount / 1) % 100));
-
-  // NOTE: A more efficient method is to move the following
-  //       code into the slider position callback function.
-  //       Please see example 07.
-  int nPos = gslc_ElemXSliderGetPos(&m_gui, m_pElemSlider);
-  snprintf(acTxt, MAX_STR, "%u", nPos);
-  gslc_ElemSetTxtStr(&m_gui, m_pElemSliderTxt, acTxt);
-
-  gslc_ElemXGaugeUpdate(&m_gui, m_pElemProgress1, (nPos*80.0 / 100.0) - 15);
-  */
 
 
   // Periodically call GUIslice update function
