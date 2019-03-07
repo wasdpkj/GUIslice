@@ -1,0 +1,5 @@
+<map id="Element Functions" name="Element Functions">
+<area shape="rect" id="node1" href="$group____ElemCreate__.html" title="Functions that create GUI elements. " alt="" coords="185,5,373,32"/>
+<area shape="rect" id="node2" href="$group____ElemUpd__.html" title="Functions that configure or modify an existing eleemnt. " alt="" coords="188,56,369,83"/>
+<area shape="rect" id="node4" href="$group____ElemGen__.html" title="General&#45;purpose functions that operate on Elements. " alt="" coords="187,107,371,133"/>
+</map>
